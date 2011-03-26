@@ -10,10 +10,22 @@ from django.contrib.sites.models import Site
 
 
 def update_settings(sender=None, instance=None, isnew=False, **kwargs):
-    
-    settings = Settings.objects.get(site=instance)
-    #save updates cached values
-    settings.save()
+
+    if isnew:
+        return
+
+    try:
+        settings = Settings.objects.get(site=instance)
+        #save updates cached values
+        settings.save()
+    except:
+        """
+        Refactor maybe - this signal is being called during `syncdb` and 
+        failing because Settings don't exist yet. So we `pass` but it feels 
+        like there could be a better solution.
+        """
+        pass
+        
 
 def invalidate_settings_cache(sender=None, instance=None, isnew=False, **kwargs):
 
