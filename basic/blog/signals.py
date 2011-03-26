@@ -8,24 +8,32 @@ from django.core.urlresolvers import reverse
 from django_twitter.models import TwitterAccount
 from django.contrib.sites.models import Site
 
+
+def update_settings(sender=None, instance=None, isnew=False, **kwargs):
+    
+    settings = Settings.objects.get(site=instance)
+    #save updates cached values
+    settings.save()
+
 def invalidate_settings_cache(sender=None, instance=None, isnew=False, **kwargs):
 
     if isnew:
         return
 
-    site_id = instance.site.id
+    site_id = instance.site.id        
     key = create_cache_key(Settings, field='site__id', field_value=site_id)
-    #invalidate cache, set to None for 5 seconds to safegaurd
-    #against race condition; concept borrowed from mmalone's django-caching
+    
+    """
+    Invalidate cache, set to None for 5 seconds to safegaurd
+    against race condition; concept borrowed from mmalone's django-caching
+    """
     cache.set(key, None, 5)
 
-
-    import twitter
-    import urllib2
-    from django_bitly.models import Bittle
-    from django.core.urlresolvers import reverse
-    from django_twitter.models import TwitterAccount
-    
+import twitter
+import urllib2
+from django_bitly.models import Bittle
+from django.core.urlresolvers import reverse
+from django_twitter.models import TwitterAccount    
 
 def post_to_twitter(sender, instance, **kwargs):
     """ 
