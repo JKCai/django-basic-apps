@@ -11,14 +11,20 @@ from PIL import Image
 import os
 
 try:
-    from sorl.thumbnail.main import DjangoThumbnail
+    from sorl.thumbnail import get_thumbnail
     def thumbnail(image_path):
-        t = DjangoThumbnail(relative_source=image_path, requested_size=(80,80))
-        return u'<img src="%s" alt="%s" />' % (t.absolute_url, image_path)
+        t = get_thumbnail(image_path, "80x80")
+        return u'<img src="%s" alt="%s" />' % (t.url, image_path)
 except ImportError:
-    def thumbnail(image_path):
-        absolute_url = os.path.join(settings.MEDIA_ROOT, image_path)
-        return u'<img src="%s" alt="%s" />' % (absolute_url, image_path)
+    try:
+        from sorl.thumbnail.main import DjangoThumbnail
+        def thumbnail(image_path):
+            t = DjangoThumbnail(relative_source=image_path, requested_size=(80,80))
+            return u'<img src="%s" alt="%s" />' % (t.absolute_url, image_path)
+    except ImportError:
+        def thumbnail(image_path):
+            absolute_url = os.path.join(settings.MEDIA_ROOT, image_path)
+            return u'<img src="%s" alt="%s" />' % (absolute_url, image_path)
 
 class AdminImageWidget(AdminFileWidget):
     """
